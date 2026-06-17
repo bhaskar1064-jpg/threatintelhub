@@ -1,6 +1,17 @@
 // ThreatIntel Hub State & Data Management
 
-// Initial realistic mock threat database
+// Get Gemini API Key from localStorage
+function getApiKey() {
+    return localStorage.getItem("GEMINI_API_KEY") || "";
+}
+
+// Save Gemini API Key to localStorage
+function saveApiKey(value) {
+    localStorage.setItem("GEMINI_API_KEY", value.trim());
+    showToast("Gemini API Key updated!", "success");
+}
+
+// Initial realistic mock threat database with default AI explanations
 let threatDatabase = [
     {
         id: "TI-89422",
@@ -12,6 +23,7 @@ let threatDatabase = [
         dangerScore: 96,
         dateReported: "2026-06-16",
         sslEnabled: false,
+        explanation: "Gemini AI analysis detected a suspicious redirection matching a PayPal login structure. The URL lacks SSL encryption which is highly indicative of credential harvesting templates.",
         whois: {
             registrar: "Porkbun LLC",
             regDate: "2026-06-15",
@@ -29,6 +41,7 @@ let threatDatabase = [
         dangerScore: 88,
         dateReported: "2026-06-16",
         sslEnabled: true,
+        explanation: "Gemini AI flagged this domain as hosting a fraudulent recovery page for hardware wallets. Although SSL is active, the domain requests seed phrases, a classic credential scam indicator.",
         whois: {
             registrar: "NameCheap, Inc.",
             regDate: "2026-06-12",
@@ -46,6 +59,7 @@ let threatDatabase = [
         dangerScore: 92,
         dateReported: "2026-06-15",
         sslEnabled: false,
+        explanation: "Gemini AI identified this domain as hosting an unencrypted executable download (.exe) masquerading as an official Microsoft Defender warning scan.",
         whois: {
             registrar: "Hostinger, UAB",
             regDate: "2026-06-14",
@@ -63,6 +77,7 @@ let threatDatabase = [
         dangerScore: 2,
         dateReported: "2026-06-14",
         sslEnabled: true,
+        explanation: "Gemini AI verified this is the official domain of GitHub, Inc. The SSL signature is valid, and domain age indicates high trust and reputation.",
         whois: {
             registrar: "MarkMonitor Inc.",
             regDate: "2007-10-09",
@@ -80,6 +95,7 @@ let threatDatabase = [
         dangerScore: 78,
         dateReported: "2026-06-14",
         sslEnabled: true,
+        explanation: "Gemini AI flagged this domain due to an active phishing payload targeting Chase Bank users. The domain registration shows proxy organization cloaks.",
         whois: {
             registrar: "GoDaddy.com, LLC",
             regDate: "2026-06-13",
@@ -97,6 +113,7 @@ let threatDatabase = [
         dangerScore: 95,
         dateReported: "2026-06-13",
         sslEnabled: false,
+        explanation: "Gemini AI analysis indicates this host attempts to deliver drive-by payload installations disguised as legacy Adobe Flash Player updates. Registration is high risk.",
         whois: {
             registrar: "Domain.com, LLC",
             regDate: "2026-06-05",
@@ -114,6 +131,7 @@ let threatDatabase = [
         dangerScore: 0,
         dateReported: "2026-06-12",
         sslEnabled: true,
+        explanation: "Gemini AI verified this is the official domain of Google LLC. The SSL signature is valid, and domain age indicates high trust and reputation.",
         whois: {
             registrar: "MarkMonitor Inc.",
             regDate: "1997-09-15",
@@ -131,6 +149,7 @@ let threatDatabase = [
         dangerScore: 65,
         dateReported: "2026-06-12",
         sslEnabled: false,
+        explanation: "Gemini AI analysis flagged this domain as hosting a survey scam offering fake rewards to harvest personal information. No valid SSL present.",
         whois: {
             registrar: "Alibaba Cloud Computing",
             regDate: "2026-06-10",
@@ -149,6 +168,12 @@ let selectedThreatId = null;
 document.addEventListener("DOMContentLoaded", () => {
     renderLedger();
     updateStatistics();
+    
+    // Load saved API Key into input if present
+    const apiKeyInput = document.getElementById("api-key-input");
+    if (apiKeyInput) {
+        apiKeyInput.value = getApiKey();
+    }
 });
 
 // View Navigation (SPA tabs switching)
@@ -226,7 +251,7 @@ function generateMockWhois(domain) {
     };
 }
 
-// Calculate dynamic threat classification score based on input url patterns
+// Calculate dynamic threat classification score based on input url patterns (Fallback Static Heuristics)
 function calculateMockThreatScore(url, category) {
     let score = 50; // default base score
     
@@ -252,12 +277,79 @@ function calculateMockThreatScore(url, category) {
     return Math.min(Math.max(score, 10), 99);
 }
 
+// Generate static fallback heuristics
+function getStaticHeuristics(urlValue, category, domainName) {
+    return {
+        dangerScore: calculateMockThreatScore(urlValue, category),
+        sslEnabled: urlValue.toLowerCase().startsWith("https://"),
+        whois: generateMockWhois(domainName),
+        explanation: "Static heuristics scanned this URL and calculated warning flags due to domain structure, SSL certificate state, and threat categorization."
+    };
+}
+
+// Query Gemini API to run AI analysis on the reported URL
+async function analyzeUrlWithAI(urlValue, category) {
+    const key = getApiKey();
+    if (!key) throw new Error("No API key configured");
+    
+    const apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+    
+    const prompt = `Analyze this URL for potential security threats: "${urlValue}".
+Category selected by reporter: "${category}".
+Perform threat heuristics and simulate WHOIS registrar data.
+Return ONLY a valid JSON object matching this structure (no markdown wrappers like \`\`\`json):
+{
+  "dangerScore": <integer 0-100 rating>,
+  "sslEnabled": <boolean indicating if connection uses SSL https>,
+  "whois": {
+    "registrar": "<simulated domain registrar>",
+    "registrationDate": "<YYYY-MM-DD>",
+    "expirationDate": "<YYYY-MM-DD>",
+    "org": "<simulated registrant organization or privacy guard name>"
+  },
+  "explanation": "<a brief 1-2 sentence description explaining your verdict, indicators found, or why the site is clean/malicious>"
+}`;
+
+    const response = await fetch(apiEndpoint, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            contents: [{
+                parts: [{
+                    text: prompt
+                }]
+            }],
+            generationConfig: {
+                responseMimeType: "application/json"
+            }
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const jsonText = data.candidates[0].content.parts[0].text.trim();
+    
+    // Safety check to strip potential markdown codeblocks if model ignored instruction
+    let cleanJson = jsonText;
+    if (cleanJson.startsWith("```")) {
+        cleanJson = cleanJson.replace(/^```json\s*/i, "").replace(/\s*```$/, "");
+    }
+    
+    return JSON.parse(cleanJson);
+}
+
 // Handle Suspicious URL Form Submission
-function handleReportSubmit(event) {
+async function handleReportSubmit(event) {
     event.preventDefault();
 
     const urlInput = document.getElementById("url-input-field");
     const categorySelect = document.getElementById("category-select-field");
+    const submitBtn = event.target.querySelector("button[type='submit']");
 
     let urlValue = urlInput.value.trim();
     if (!urlValue) return;
@@ -279,9 +371,46 @@ function handleReportSubmit(event) {
         return;
     }
 
-    const sslEnabled = urlValue.toLowerCase().startsWith("https://");
-    const dangerScore = calculateMockThreatScore(urlValue, category);
-    
+    const key = getApiKey();
+    let aiResult;
+
+    if (key) {
+        // Toggle button state to loading
+        const originalBtnHTML = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" style="animation: spin 1s linear infinite; width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.5;">
+                <circle cx="12" cy="12" r="10" stroke-dasharray="35" stroke-dashoffset="10"/>
+            </svg>
+            AI Analyzing...
+        `;
+
+        // Inject temporary rotation CSS if not already present
+        if (!document.getElementById("spin-animation-style")) {
+            const style = document.createElement("style");
+            style.id = "spin-animation-style";
+            style.innerHTML = "@keyframes spin { 100% { transform: rotate(360deg); } }";
+            document.head.appendChild(style);
+        }
+
+        showToast("Querying Gemini AI for threat scan...", "info");
+
+        try {
+            aiResult = await analyzeUrlWithAI(urlValue, category);
+            showToast("Gemini AI analysis finished!", "success");
+        } catch (e) {
+            console.error("Gemini AI API failed. Defaulting to local static heuristics:", e);
+            showToast("Gemini offline. Static heuristics applied.", "warning");
+            aiResult = getStaticHeuristics(urlValue, category, domainName);
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHTML;
+    } else {
+        showToast("No API key configured. Applied static heuristics.", "warning");
+        aiResult = getStaticHeuristics(urlValue, category, domainName);
+    }
+
     const newThreatId = "TI-" + (Math.floor(Math.random() * 90000) + 10000);
     const todayStr = new Date().toISOString().split('T')[0];
 
@@ -290,12 +419,13 @@ function handleReportSubmit(event) {
         domain: domainName,
         url: urlValue,
         category: category,
-        reporterTrust: "Medium", // guest submitter default
+        reporterTrust: "Medium",
         status: "Pending",
-        dangerScore: dangerScore,
+        dangerScore: aiResult.dangerScore,
         dateReported: todayStr,
-        sslEnabled: sslEnabled,
-        whois: generateMockWhois(domainName)
+        sslEnabled: aiResult.sslEnabled,
+        explanation: aiResult.explanation,
+        whois: aiResult.whois
     };
 
     // Add to top of ledger list
@@ -427,7 +557,6 @@ function animateCounter(elementId, targetVal) {
         return;
     }
     
-    // Set immediate update for simplicity but can step if desired
     el.innerText = targetVal;
 }
 
@@ -480,6 +609,9 @@ function openModal(threatId) {
     document.getElementById("whois-reg-date").innerText = threat.whois.regDate;
     document.getElementById("whois-exp-date").innerText = threat.whois.expDate;
     document.getElementById("whois-org").innerText = threat.whois.org;
+
+    // Populate AI Verdict
+    document.getElementById("modal-ai-explanation").innerText = threat.explanation || "No explanation available.";
 
     // Populate SSL warning certificate
     const sslBanner = document.getElementById("modal-ssl-banner");

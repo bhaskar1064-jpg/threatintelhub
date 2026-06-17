@@ -48,6 +48,10 @@
             </nav>
 
             <div class="sidebar-footer">
+                <div class="api-key-config-wrapper" style="margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                    <label for="api-key-input" style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Gemini API Key</label>
+                    <input type="password" id="api-key-input" placeholder="Configure API Key..." onchange="saveApiKey(this.value)" style="width: 100%; padding: 0.5rem 0.75rem; background-color: #1e293b; border: 1.5px solid #334155; border-radius: var(--border-radius-sm); color: var(--text-white); font-size: 0.8rem; transition: var(--transition-fast);">
+                </div>
                 <div class="user-profile">
                     <div class="user-avatar">TI</div>
                     <div class="user-info">
@@ -342,6 +346,10 @@
                             <span class="metadata-label">Reporter Trust Level:</span>
                             <span class="metadata-val" id="modal-trust-level">Mid</span>
                         </div>
+                    </div>
+                    <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <span class="whois-field-label" style="margin-bottom: 0.35rem; display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">AI Threat Verdict</span>
+                        <p id="modal-ai-explanation" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; font-weight: 500;">No AI analysis available for legacy mock data.</p>
                     </div>
                 </section>
 
