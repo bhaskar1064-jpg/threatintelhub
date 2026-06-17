@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreatIntel Hub - Reporting and Tracking Malicious URLs</title>
+    <meta name="description" content="ThreatIntel Hub is a community-driven platform to report, analyze, and track phishing URLs, malware domains, and scams in real-time.">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (Dark Theme) -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <span class="brand-name">ThreatIntel Hub</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="9" rx="1" />
+                        <rect x="14" y="3" width="7" height="5" rx="1" />
+                        <rect x="14" y="12" width="7" height="9" rx="1" />
+                        <rect x="3" y="16" width="7" height="5" rx="1" />
+                    </svg>
+                    Dashboard & Ledger
+                </button>
+                <button class="nav-item" id="nav-api" onclick="switchTab('api')">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
+                    </svg>
+                    API & Docs
+                </button>
+                <button class="nav-item" id="nav-about" onclick="switchTab('about')">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
+                    About Platform
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">TI</div>
+                    <div class="user-info">
+                        <span class="user-name">Guest Reporter</span>
+                        <span class="user-role">Trust Level: Mid</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area (Light Theme / High Contrast) -->
+        <main class="main-content" id="main-content-area">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="content-view">
+                <!-- Header Wrapper -->
+                <div class="header-wrapper">
+                    <div class="header-title-container">
+                        <h1>Security Threat Dashboard</h1>
+                        <p>Track recently reported phishing links, scam portals, and malware servers.</p>
+                    </div>
+                    <div class="system-status">
+                        <div class="status-pulse"></div>
+                        <span>Live Feed Active</span>
+                    </div>
+                </div>
+
+                <!-- Threat Statistics Counters -->
+                <section class="stats-grid" aria-label="System stats counters">
+                    <div class="stat-card total">
+                        <div class="stat-icon-wrapper">
+                            <svg viewBox="0 0 24 24" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="16" x2="12" y2="12"/>
+                                <line x1="12" y1="8" x2="12.01" y2="8"/>
+                            </svg>
+                        </div>
+                        <div class="stat-data">
+                            <span class="stat-value" id="stat-total">0</span>
+                            <span class="stat-label">Total Reported</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card malicious">
+                        <div class="stat-icon-wrapper">
+                            <svg viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                        </div>
+                        <div class="stat-data">
+                            <span class="stat-value" id="stat-malicious">0</span>
+                            <span class="stat-label">Verified Malicious</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card safe">
+                        <div class="stat-icon-wrapper">
+                            <svg viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <div class="stat-data">
+                            <span class="stat-value" id="stat-safe">0</span>
+                            <span class="stat-label">Verified Safe</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card pending">
+                        <div class="stat-icon-wrapper">
+                            <svg viewBox="0 0 24 24" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </div>
+                        <div class="stat-data">
+                            <span class="stat-value" id="stat-pending">0</span>
+                            <span class="stat-label">Pending Review</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- URL Threat Reporting Section -->
+                <section class="report-section" aria-labelledby="report-section-title">
+                    <div class="section-header">
+                        <h2 class="section-title" id="report-section-title">Report Suspicious Url</h2>
+                        <p class="section-desc">Submit suspicious web domains or links for automated classification and community vetting.</p>
+                    </div>
+
+                    <form class="report-form" id="threat-report-form" onsubmit="handleReportSubmit(event)">
+                        <div class="form-group-url">
+                            <div class="url-input-wrapper">
+                                <span class="url-input-icon">
+                                    <svg viewBox="0 0 24 24" stroke="currentColor">
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                    </svg>
+                                </span>
+                                <input type="text" class="url-input" id="url-input-field" placeholder="Report a Suspicious URL or Phishing Link here" required autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="form-group-category">
+                            <div class="category-select-wrapper">
+                                <select class="category-select" id="category-select-field" required>
+                                    <option value="" disabled selected>Category Select</option>
+                                    <option value="Phishing">Phishing Link</option>
+                                    <option value="Malware Domain">Malware Domain</option>
+                                    <option value="Scam/Fraud">Scam / Fraud</option>
+                                </select>
+                                <span class="select-arrow">
+                                    <svg viewBox="0 0 24 24">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <svg viewBox="0 0 24 24" stroke="currentColor">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Submit Report
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Live Ledger Table & Controls -->
+                <section class="ledger-section" aria-labelledby="ledger-section-title">
+                    <div class="ledger-controls">
+                        <div class="search-input-wrapper">
+                            <span class="search-icon">
+                                <svg viewBox="0 0 24 24" stroke="currentColor">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                            </span>
+                            <input type="text" class="search-input" id="ledger-search-input" placeholder="Search by domain name..." oninput="handleFilterChange()">
+                        </div>
+
+                        <div class="filter-tabs" role="tablist" aria-label="Filter ledger threats by verification status">
+                            <button class="filter-tab active" id="tab-all" role="tab" aria-selected="true" onclick="setFilterStatus('all')">All Threats</button>
+                            <button class="filter-tab" id="tab-pending" role="tab" aria-selected="false" onclick="setFilterStatus('Pending')">Pending</button>
+                            <button class="filter-tab" id="tab-safe" role="tab" aria-selected="false" onclick="setFilterStatus('Verified Safe')">Verified Safe</button>
+                            <button class="filter-tab" id="tab-malicious" role="tab" aria-selected="false" onclick="setFilterStatus('Verified Malicious')">Verified Malicious</button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="ledger-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Domain</th>
+                                    <th scope="col">Date Reported</th>
+                                    <th scope="col">Category</th>
+                                    <th scope="col">Reporter Trust Level</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledger-table-body">
+                                <!-- Dynamic entries go here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- API View (Hidden by default) -->
+            <div id="view-api" class="content-view" style="display: none;">
+                <div class="header-wrapper">
+                    <div class="header-title-container">
+                        <h1>Developer API Documentation</h1>
+                        <p>Integrate ThreatIntel Hub domain intelligence feeds directly into your security infrastructure.</p>
+                    </div>
+                </div>
+
+                <div style="background-color: var(--bg-card); padding: 2rem; border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 1.5rem;">
+                    <h3 style="font-family: 'Outfit'; font-size: 1.25rem;">Query Domain Intelligence</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">Query reported scores, SSL state, and classification history by sending a simple JSON GET request.</p>
+                    
+                    <div style="background-color: #0f172a; color: #38bdf8; font-family: monospace; padding: 1.25rem; border-radius: var(--border-radius-md); font-size: 0.9rem; border: 1px solid #1e293b; overflow-x: auto;">
+                        <span style="color: #64748b;"># GET /api/v1/threats/verify?domain=scam-portal.net</span><br>
+                        curl -X GET "https://api.threatintelhub.io/v1/threats/verify?domain=scam-portal.net" \<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;-H "Authorization: Bearer YOUR_API_TOKEN"
+                    </div>
+
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin-top: 1rem;">Response Payload Example</h4>
+                    <pre style="background-color: #f1f5f9; font-family: monospace; padding: 1.25rem; border-radius: var(--border-radius-md); font-size: 0.85rem; border: 1px solid var(--border-color); overflow-x: auto; color: #0f172a;">
+{
+  "domain": "scam-portal.net",
+  "status": "Verified Malicious",
+  "dangerScore": 92,
+  "category": "Phishing",
+  "sslEnabled": false,
+  "whois": {
+    "registrar": "NameCheap, Inc.",
+    "registrationDate": "2026-06-15"
+  }
+}</pre>
+                </div>
+            </div>
+
+            <!-- About Platform View (Hidden by default) -->
+            <div id="view-about" class="content-view" style="display: none;">
+                <div class="header-wrapper">
+                    <div class="header-title-container">
+                        <h1>About ThreatIntel Hub</h1>
+                        <p>A global community protecting users and networks from modern internet threats.</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+                    <div style="background-color: var(--bg-card); padding: 2rem; border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+                        <h3 style="font-family: 'Outfit'; font-size: 1.2rem; margin-bottom: 0.75rem;">Community-Driven Vetting</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">Our platform pairs automated heuristics and registrar validation with crowd-sourced verification. Reports submitted by veteran analysts are weighted with high trust immediately, while reports from anonymous users undergo vetting by community moderators before classification shifts to Verified.</p>
+                    </div>
+                    <div style="background-color: var(--bg-card); padding: 2rem; border-radius: var(--border-radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+                        <h3 style="font-family: 'Outfit'; font-size: 1.2rem; margin-bottom: 0.75rem;">Platform Mandate</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">We believe in an open web. ThreatIntel Hub aggregates real-time indicators of compromise (IoCs) and exports blacklists to system administrators, firewalls, and browser extension maintainers worldwide, completely free of charge.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Threat Detail Modal Component -->
+    <div class="modal-overlay" id="threat-detail-modal" onclick="closeModal(event)">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title-wrapper">
+                    <h2 class="modal-title" id="modal-domain-name">suspicious-site.net</h2>
+                    <span class="modal-subtitle">Threat Ledger ID: <span id="modal-threat-id">TI-89422</span></span>
+                </div>
+                <button class="btn-modal-close" onclick="closeModal()" aria-label="Close details modal">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Warning SSL banner -->
+                <div class="ssl-warning-banner" id="modal-ssl-banner">
+                    <div class="ssl-warning-icon">
+                        <svg viewBox="0 0 24 24" id="modal-ssl-icon">
+                            <!-- Injected by JS -->
+                        </svg>
+                    </div>
+                    <div class="ssl-warning-content">
+                        <span class="ssl-warning-title" id="modal-ssl-title">Site Lacks SSL Certificate</span>
+                        <span class="ssl-warning-desc" id="modal-ssl-desc">This connection is unencrypted (HTTP). It lacks valid SSL certificates, standard for phishing.</span>
+                    </div>
+                </div>
+
+                <!-- Threat Scorecard Section -->
+                <section class="card-scorecard-section">
+                    <div class="scorecard-card">
+                        <span class="scorecard-header">Threat Analysis Scorecard</span>
+                        
+                        <div class="gauge-container">
+                            <svg class="gauge-svg" viewBox="0 0 100 100">
+                                <circle class="gauge-bg" cx="50" cy="50" r="40" />
+                                <circle class="gauge-fill" id="gauge-fill-arc" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2" />
+                            </svg>
+                            <div class="danger-score-text">
+                                <span class="danger-score-val" id="modal-danger-score">0</span>
+                                <span class="danger-score-label">Danger</span>
+                            </div>
+                        </div>
+
+                        <div class="threat-classification" id="modal-classification">
+                            PENDING ANALYSIS
+                        </div>
+                    </div>
+
+                    <div class="metadata-vertical-list">
+                        <div class="metadata-item-row">
+                            <span class="metadata-label">Reported Category:</span>
+                            <span class="metadata-val" id="modal-category">Phishing</span>
+                        </div>
+                        <div class="metadata-item-row">
+                            <span class="metadata-label">Date Submitted:</span>
+                            <span class="metadata-val" id="modal-date-reported">2026-06-16</span>
+                        </div>
+                        <div class="metadata-item-row">
+                            <span class="metadata-label">Reporter Trust Level:</span>
+                            <span class="metadata-val" id="modal-trust-level">Mid</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Domain Registration WHOIS Section -->
+                <section class="card-whois-section">
+                    <div class="whois-title-container">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                            <path d="M2 12h20" />
+                        </svg>
+                        <h3 class="whois-title">WHOIS Details</h3>
+                    </div>
+
+                    <div class="whois-grid">
+                        <div class="whois-field">
+                            <span class="whois-field-label">Domain Registrar</span>
+                            <span class="whois-field-val" id="whois-registrar">NameCheap, Inc.</span>
+                        </div>
+                        <div class="whois-field">
+                            <span class="whois-field-label">Registration Date</span>
+                            <span class="whois-field-val" id="whois-reg-date">2026-05-12</span>
+                        </div>
+                        <div class="whois-field">
+                            <span class="whois-field-label">Expiration Date</span>
+                            <span class="whois-field-val" id="whois-exp-date">2027-05-12</span>
+                        </div>
+                        <div class="whois-field">
+                            <span class="whois-field-label">Registrant Organization</span>
+                            <span class="whois-field-val" id="whois-org">Privacy Protection Co.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Moderator Simulation Actions -->
+                <div class="modal-moderator-actions">
+                    <span class="moderator-actions-title">Vetting Moderation (Simulation)</span>
+                    <div class="moderator-btns">
+                        <button class="btn-action-verify safe" onclick="simulateModerateStatus('Verified Safe')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Verify as Safe
+                        </button>
+                        <button class="btn-action-verify malicious" onclick="simulateModerateStatus('Verified Malicious')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                                <line x1="12" y1="2" x2="12" y2="12"/>
+                            </svg>
+                            Verify as Malicious
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Area -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
